@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 
 
 class AdvertisementForm(forms.ModelForm):
+    image = forms.ImageField(required=False)
+    video = forms.FileField(required=False)
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
         empty_label="Выберите категорию",
@@ -12,7 +14,7 @@ class AdvertisementForm(forms.ModelForm):
 
     class Meta:
         model = Advertisement
-        fields = ['title', 'content', 'category']  # Добавьте другие поля по необходимости
+        fields = ['title', 'category', 'content', 'image', 'video']
         widgets = {
             'content': forms.Textarea(attrs={'class': 'django_ckeditor_5'}),
         }
