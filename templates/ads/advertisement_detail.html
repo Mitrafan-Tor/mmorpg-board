@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title">{{ ad.title }}</h1>
+        <div class="card-text">
+            {{ ad.content|safe }}
+        </div>
+
+        {% if ad.image %}
+        <div class="mt-3">
+            <img src="{{ ad.image.url }}" alt="{{ ad.title }}" class="img-fluid">
+        </div>
+        {% endif %}
+
+        {% if ad.video %}
+        <div class="mt-3">
+            <video width="100%" controls>
+                <source src="{{ ad.video.url }}" type="video/mp4">
+                Ваш браузер не поддерживает видео тег.
+            </video>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Отклики</h2>
+    </div>
+    <div class="card-body">
+        {% if user.is_authenticated and user != ad.author %}
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.text }}
+                    {% if form.text.errors %}
+                        <div class="text-danger">{{ form.text.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить отклик</button>
+            </form>
+        {% endif %}
+
+        {% for response in responses %}
+            <div class="mb-3 p-3 {% if response.accepted %}bg-light{% else %}border-bottom{% endif %}">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ response.author.username }}</strong>
+                        <span class="text-muted small ms-2">{{ response.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    {% if response.accepted %}
+                        <span class="badge bg-success">Принят</span>
+                    {% endif %}
+                </div>
+                <p class="mt-2 mb-0">{{ response.text }}</p>
+
+                {% if user == ad.author and not response.accepted %}
+                    <div class="mt-2">
+                        <a href="{% url 'accept_response' response.pk %}" class="btn btn-sm btn-success">Принять</a>
+                        <a href="{% url 'delete_response' response.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="text-muted">Пока нет откликов</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
