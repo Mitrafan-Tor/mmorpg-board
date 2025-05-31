@@ -36,49 +36,41 @@ def delete_advertisement(request, pk):
 @login_required
 def edit_advertisement(request, pk):
     ad = get_object_or_404(Advertisement, pk=pk, author=request.user)
+
     if request.method == 'POST':
-        form = AdvertisementForm(request.POST, request.FILES, instance=ad)  # Добавлен request.FILES
+        form = AdvertisementForm(request.POST, request.FILES, instance=ad)
         if form.is_valid():
+            # Обработка удаления файлов
+            if form.cleaned_data.get('clear_image'):
+                ad.image.delete(save=False)
+            if form.cleaned_data.get('clear_video'):
+                ad.video.delete(save=False)
+
             form.save()
             messages.success(request, 'Объявление успешно обновлено!')
             return redirect('advertisement_detail', pk=ad.pk)
     else:
         form = AdvertisementForm(instance=ad)
-    return render(request, 'ads/edit_advertisement.html', {'form': form})
+
+    return render(request, 'ads/edit_advertisement.html', {
+        'form': form,
+        'ad': ad,
+    })
 
 
-# def advertisement_detail(request, pk):
-#     ad = get_object_or_404(Advertisement, pk=pk)
-#     if request.method == 'POST' and request.user.is_authenticated:
-#         form = ResponseForm(request.POST)
+# @login_required
+# def edit_advertisement(request, pk):
+#     ad = get_object_or_404(Advertisement, pk=pk, author=request.user)
+#     if request.method == 'POST':
+#         form = AdvertisementForm(request.POST, request.FILES, instance=ad)  # Добавлен request.FILES
 #         if form.is_valid():
-#             response = form.save(commit=False)
-#             response.advertisement = ad
-#             response.author = request.user
-#             response.save()
-#
-#             # Отправка уведомления автору объявления
-#             subject = f'Новый отклик на ваше объявление "{ad.title}"'
-#             message = f'Пользователь {request.user.username} оставил отклик на ваше объявление "{ad.title}":\n\n{response.text}'
-#             send_mail(
-#                 subject,
-#                 message,
-#                 settings.DEFAULT_FROM_EMAIL,
-#                 [ad.author.email],
-#                 fail_silently=False,
-#             )
-#
-#             messages.success(request, 'Ваш отклик успешно отправлен!')
+#             form.save()
+#             messages.success(request, 'Объявление успешно обновлено!')
 #             return redirect('advertisement_detail', pk=ad.pk)
 #     else:
-#         form = ResponseForm()
-#
-#     responses = ad.response_set.all()
-#     return render(request, 'ads/advertisement_detail.html', {
-#         'ad': ad,
-#         'form': form,
-#         'responses': responses,
-#     })
+#         form = AdvertisementForm(instance=ad)
+#     return render(request, 'ads/edit_advertisement.html', {'form': form})
+
 
 @login_required
 def advertisement_detail(request, pk):

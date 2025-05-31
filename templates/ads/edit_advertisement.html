@@ -1,34 +1,143 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h2 class="mb-4">Редактировать объявление</h2>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="id_title" class="form-label">Заголовок</label>
-                {{ form.title }}
-                {% if form.title.errors %}
-                    <div class="text-danger">{{ form.title.errors }}</div>
-                {% endif %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h2 class="mb-0">Редактирование объявления</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Заголовок -->
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Заголовок*</label>
+                            {{ form.title }}
+                            <div class="form-text">Минимум 5 символов</div>
+                        </div>
+
+                        <!-- Категория -->
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label">Категория*</label>
+                            {{ form.category }}
+                        </div>
+
+                        <!-- Содержание -->
+                        <div class="mb-3">
+                            <label for="id_content" class="form-label">Содержание*</label>
+                            {{ form.content }}
+                        </div>
+
+                        <!-- Блок для изображения -->
+                        <div class="mb-3">
+                            <label class="form-label">Изображение</label>
+
+                            {% if ad.image %}
+                            <div class="current-file mb-3 p-3 border rounded">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ ad.image.url }}"
+                                         alt="Текущее изображение"
+                                         class="img-thumbnail me-3"
+                                         style="max-height: 100px;">
+                                    <div>
+                                        <p class="mb-1">Текущее изображение</p>
+                                        <div class="form-check">
+                                            <input type="checkbox"
+                                                   name="clear_image"
+                                                   id="clear_image_id"
+                                                   class="form-check-input">
+                                            <label for="clear_image_id" class="form-check-label">
+                                                Удалить это изображение
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <input type="file" name="image"
+                                   accept="image/*"
+                                   class="form-control"
+                                   id="id_image">
+                            <div class="form-text">
+                                Максимальный размер: 5MB. Допустимые форматы: JPG, PNG, GIF
+                            </div>
+                        </div>
+
+                        <!-- Блок для видео -->
+                        <div class="mb-4">
+                            <label class="form-label">Видео</label>
+
+                            {% if ad.video %}
+                            <div class="current-file mb-3 p-3 border rounded">
+                                <div class="d-flex align-items-center">
+                                    <div class="ratio ratio-16x9 me-3" style="width: 150px;">
+                                        <video controls>
+                                            <source src="{{ ad.video.url }}" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div>
+                                        <p class="mb-1">Текущее видео</p>
+                                        <div class="form-check">
+                                            <input type="checkbox"
+                                                   name="clear_video"
+                                                   id="clear_video_id"
+                                                   class="form-check-input">
+                                            <label for="clear_video_id" class="form-check-label">
+                                                Удалить это видео
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <input type="file" name="video"
+                                   accept="video/*"
+                                   class="form-control"
+                                   id="id_video">
+                            <div class="form-text">
+                                Максимальный размер: 50MB. Допустимые форматы: MP4, AVI, MOV
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-save"></i> Сохранить изменения
+                                </button>
+                                <a href="{% url 'advertisement_detail' ad.pk %}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Отмена
+                                </a>
+                            </div>
+
+                            {% if ad.image or ad.video %}
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> Чтобы заменить файл, просто загрузите новый
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="id_category" class="form-label">Категория</label>
-                {{ form.category }}
-                {% if form.category.errors %}
-                    <div class="text-danger">{{ form.category.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="mb-3">
-                <label for="id_content" class="form-label">Содержание</label>
-                {{ form.content }}
-                {% if form.content.errors %}
-                    <div class="text-danger">{{ form.content.errors }}</div>
-                {% endif %}
-            </div>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+    .current-file {
+        background-color: #f8f9fa;
+    }
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
 {% endblock %}

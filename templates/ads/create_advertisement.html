@@ -2,11 +2,203 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Создать новое объявление</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Опубликовать</button>
-    </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h2 class="mb-0"><i class="bi bi-plus-circle me-2"></i> Создание нового объявления</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Заголовок -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Заголовок*</label>
+                            {{ form.title }}
+                            <div class="form-text">Минимум 5 символов</div>
+                        </div>
+
+                        <!-- Категория -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Категория*</label>
+                            {{ form.category }}
+                        </div>
+
+                        <!-- Содержание -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Содержание*</label>
+                            {{ form.content }}
+                        </div>
+
+                        <!-- Блок для изображения -->
+                        <div class="mb-4 border-bottom pb-4">
+                            <label class="form-label fw-bold">Изображение (необязательно)</label>
+
+                            <div class="input-group mb-3">
+                                {{ form.image }}
+                                <button class="btn btn-outline-secondary" type="button"
+                                        data-bs-toggle="tooltip"
+                                        title="Допустимые форматы: JPG, PNG, GIF. Максимум 5MB">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+
+                            <div class="preview-container d-none" id="image-preview">
+                                <div class="d-flex align-items-start">
+                                    <div class="position-relative" style="max-width: 300px;">
+                                        <img id="image-preview-element" class="img-thumbnail rounded shadow-sm w-100">
+                                        <button type="button"
+                                                class="btn btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                                                style="width: 30px; height: 30px; padding: 0;"
+                                                onclick="clearFileInput('id_image', 'image-preview')">
+                                            <i class="bi bi-x fs-5 text-white d-flex justify-content-center align-items-center w-100 h-100"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Блок для видео -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Видео (необязательно)</label>
+
+                            <div class="input-group mb-3">
+                                {{ form.video }}
+                                <button class="btn btn-outline-secondary" type="button"
+                                        data-bs-toggle="tooltip"
+                                        title="Допустимые форматы: MP4, AVI, MOV. Максимум 50MB">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+
+                            <div class="preview-container d-none" id="video-preview">
+                                <div class="d-flex align-items-start">
+                                    <div class="position-relative" style="max-width: 400px;">
+                                        <video id="video-preview-element" class="rounded shadow-sm w-100" controls></video>
+                                        <button type="button"
+                                                class="btn btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                                                style="width: 30px; height: 30px; padding: 0;"
+                                                onclick="clearFileInput('id_video', 'video-preview')">
+                                            <i class="bi bi-x fs-5 text-white d-flex justify-content-center align-items-center w-100 h-100"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки отправки формы -->
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary px-4 py-2">
+                                <i class="bi bi-save me-2"></i> Опубликовать
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 py-2">
+                                <i class="bi bi-x-circle me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    // Инициализация превью изображений
+    document.getElementById('id_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('image-preview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview-element').src = e.target.result;
+                preview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Инициализация превью видео (исправленная версия)
+    document.getElementById('id_video').addEventListener('change', function(e) {
+        const preview = document.getElementById('video-preview');
+        const videoElement = document.getElementById('video-preview-element');
+
+        if (this.files && this.files[0]) {
+            // Освобождаем предыдущий URL, если он был
+            if (videoElement.src) {
+                URL.revokeObjectURL(videoElement.src);
+            }
+
+            // Создаем новый URL для видео
+            const videoURL = URL.createObjectURL(this.files[0]);
+            videoElement.src = videoURL;
+            videoElement.load(); // Важно: загружаем видео
+            preview.classList.remove('d-none');
+
+            // Обработка ошибок
+            videoElement.onerror = function() {
+                console.error("Ошибка загрузки видео");
+                preview.classList.add('d-none');
+            };
+        }
+    });
+
+    // Функция очистки файлов
+    function clearFileInput(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+
+        input.value = '';
+        preview.classList.add('d-none');
+
+        if (previewId === 'video-preview') {
+            const videoElement = document.getElementById('video-preview-element');
+            if (videoElement.src) {
+                URL.revokeObjectURL(videoElement.src);
+            }
+            videoElement.src = '';
+        } else {
+            document.getElementById('image-preview-element').src = '';
+        }
+    }
+
+    // Инициализация tooltip'ов Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<style>
+    /* Стили для кнопок удаления */
+    .btn-danger.position-absolute {
+        background-color: #dc3545 !important;
+        border: 2px solid white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.2s;
+    }
+    .btn-danger.position-absolute:hover {
+        background-color: #c82333 !important;
+        transform: scale(1.1);
+    }
+
+    /* Стили для превью видео */
+    #video-preview-element {
+        background-color: #000;
+        max-height: 225px;
+    }
+
+    /* Общие стили формы */
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+    }
+    .preview-container {
+        transition: all 0.3s ease;
+    }
+    .img-thumbnail {
+        max-height: 200px;
+        object-fit: contain;
+    }
+</style>
 {% endblock %}

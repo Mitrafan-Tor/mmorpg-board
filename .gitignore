@@ -55,3 +55,9 @@ cache_files/*
 general.log
 errors.log
 security.log
+
+media/ads_images/*
+!media/ads_images/.gitkeep
+
+media/ads_videos/*
+!media/ads_videos/.gitkeep
